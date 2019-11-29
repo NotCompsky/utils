@@ -275,6 +275,10 @@ char* get_all_matches(char* str){
 
 
 int main(const int argc,  const char* const* argv){
+	/*
+	 * Use the browser developer console to "Copy as cURL" the request to "https://www.facebook.com/messages" while logged in.
+	 * Simply pipe this cURL command to this fbmsg program
+	 */
 	constexpr static size_t buf_sz = 4 * 1024 * 1024; // 4 MiB
 	char* buf = (char*)malloc(buf_sz);
 	if (buf == nullptr)
