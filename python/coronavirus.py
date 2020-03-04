@@ -125,8 +125,8 @@ def graph_df(df, inc_legend:bool, yscale:str, per_capita:bool, china:int, only_r
 			continue
 		_region_names.append(region_name)
 		_df = df.loc[df["Country/Region"].isin(region)].drop(columns=drop_cols)
-		_df.columns = pd.to_datetime(_df.columns)
 		arr = _df.sum(axis=0)
+		arr.index = pd.to_datetime(arr.index)
 		if per_capita:
 			n:int = 0
 			for _subregion in region:
