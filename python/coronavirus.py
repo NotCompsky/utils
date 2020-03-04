@@ -1,11 +1,6 @@
 #!/usr/bin/env python3
 
 
-# Plot countries vs infections
-#df.drop(columns=["Lat","Long"]).groupby(df["Country/Region"]).aggregate("sum").plot(x="Country/Region")
-
-drop_cols:list = ["Province/State","Country/Region","Lat","Long"]
-
 european_countries:list = [
 	"Switzerland",
 	"Greece",
@@ -63,9 +58,7 @@ all_regions:dict = {
 }
 
 
-populations_df = None
 def get_population(region:str):
-	
 	# Already counted
 	if region in ["Hong Kong","Taiwan","Macau","North Ireland"]:
 		return 0
@@ -83,22 +76,23 @@ def get_population(region:str):
 		"South Korea": "Korea, Rep.",
 	}.get(region) or region
 	
-	global populations_df
-	if populations_df is not None:
-		_df = populations_df.loc[populations_df["Country Name"]==region]
+	if get_population.df is not None:
+		_df = get_population.df.loc[get_population.df["Country Name"]==region]
 		try:
 			return int(_df.loc[_df["Year"]==_df["Year"].max()].iat[0, 4])
 		except IndexError:
+			print(_df)
 			raise Exception(f"No population data for: {region}")
 	try:
-		populations_df = pd.read_csv("populations.csv")
+		get_population.df = pd.read_csv("populations.csv")
 	except FileNotFoundError:
-		populations_df = pd.read_csv("https://pkgstore.datahub.io/core/population/population_csv/data/ead5be05591360d33ad1a37382f8f8b1/population_csv.csv")
-		populations_df.to_csv("populations.csv")
+		get_population.df = pd.read_csv("https://pkgstore.datahub.io/core/population/population_csv/data/ead5be05591360d33ad1a37382f8f8b1/population_csv.csv")
+		get_population.df.to_csv("populations.csv")
 	return get_population(region)
 
+get_population.df = None
 
-def graph_arr(ax, arr, per_capita:bool):
+def graph_arr(ax, arr, per_capita:bool, region_list:list):
 	arr.index = pd.to_datetime(arr.index)
 	if per_capita:
 		n:int = 0
@@ -115,17 +109,18 @@ def graph_arr(ax, arr, per_capita:bool):
 
 
 def graph(df, inc_legend:bool, yscale:str, per_capita:bool, countries:list, regions:list):
+	drop_cols:list = ["Province/State","Country/Region","Lat","Long"]
 	fig, ax = plt.subplots()
 	plt.margins(x=0,y=0)
 	_region_names:list = []
 	for region in regions:
 		_region_names.append(region)
 		_df = df.loc[df["Country/Region"].isin(all_regions[region])].drop(columns=drop_cols)
-		graph_arr(ax, _df.sum(axis=0), per_capita)
+		graph_arr(ax, _df.sum(axis=0), per_capita, all_regions[region])
 	for country in countries:
 		_region_names.append(country)
 		_df = df.loc[df["Country/Region"]==country].drop(columns=drop_cols)
-		graph_arr(ax, _df.sum(axis=0), per_capita)
+		graph_arr(ax, _df.sum(axis=0), per_capita, [country])
 	if inc_legend:
 		ax.legend(_region_names)
 	ax.set_yscale(yscale)
