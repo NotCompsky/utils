@@ -50,18 +50,17 @@ china:list = ["Mainland China"]
 africa:list = ["Nigeria","Senegal"]
 international:list = ["Others"]
 
-region_names:tuple = (
-	"Australasia",
-	"China",
-	"East asia excluding China",
-	"Europe",
-	"Middle East",
-	"North America",
-	"South America",
-	"Sub-Saharan Africa",
-	"International",
-)
-regions:list = (auzealand, china, asia_excl_china, european_countries, semitia, canadia, samerica, africa, international)
+all_regions:dict = {
+	"Australasia": auzealand,
+	"China": china,
+	"East asia excluding China": asia_excl_china,
+	"Europe": european_countries,
+	"Middle East": semitia,
+	"North America": canadia,
+	"South America": samerica,
+	"Sub-Saharan Africa": africa,
+	"International": international,
+}
 
 
 populations_df = None
@@ -99,46 +98,34 @@ def get_population(region:str):
 	return get_population(region)
 
 
+def graph_arr(ax, arr, per_capita:bool):
+	arr.index = pd.to_datetime(arr.index)
+	if per_capita:
+		n:int = 0
+		for _subregion in region_list:
+			try:
+				n += get_population(_subregion)
+			except TypeError:
+				# returned None
+				raise Exception(f"Cannot get population for: {_subregion}")
+		arr = arr.divide(n)
+	arr.plot(ax=ax)
+	n_infected_now:int = arr[-1]
+	plt.annotate(n_infected_now, xy=(plt.gca().get_xlim()[1],n_infected_now))
 
-def graph_df(df, inc_legend:bool, yscale:str, per_capita:bool, china:int, only_region:str):
-	for c in df["Country/Region"].values:
-		to_break:bool = False
-		for ls in regions:
-			to_break = (c in ls)
-			if to_break:
-				break
-		if to_break:
-			continue
-		
-		print(c)
 
+def graph(df, inc_legend:bool, yscale:str, per_capita:bool, countries:list, regions:list):
 	fig, ax = plt.subplots()
 	plt.margins(x=0,y=0)
 	_region_names:list = []
-	for region, region_name in zip(regions, region_names):
-		if only_region is not None and region_name != only_region:
-			continue
-		is_china:bool = (region_name == "China")
-		if china == 0 and is_china:
-			continue
-		if china == 2 and not is_china:
-			continue
-		_region_names.append(region_name)
-		_df = df.loc[df["Country/Region"].isin(region)].drop(columns=drop_cols)
-		arr = _df.sum(axis=0)
-		arr.index = pd.to_datetime(arr.index)
-		if per_capita:
-			n:int = 0
-			for _subregion in region:
-				try:
-					n += get_population(_subregion)
-				except TypeError:
-					# returned None
-					raise Exception(f"Cannot get population for: {_subregion}")
-			arr = arr.divide(n)
-		arr.plot(ax=ax)
-		n_infected_now:int = arr[-1]
-		plt.annotate(n_infected_now, xy=(plt.gca().get_xlim()[1],n_infected_now))
+	for region in regions:
+		_region_names.append(region)
+		_df = df.loc[df["Country/Region"].isin(all_regions[region])].drop(columns=drop_cols)
+		graph_arr(ax, _df.sum(axis=0), per_capita)
+	for country in countries:
+		_region_names.append(country)
+		_df = df.loc[df["Country/Region"]==country].drop(columns=drop_cols)
+		graph_arr(ax, _df.sum(axis=0), per_capita)
 	if inc_legend:
 		ax.legend(_region_names)
 	ax.set_yscale(yscale)
@@ -152,11 +139,14 @@ if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
 	parser.add_argument("which", nargs="*", help="Confirmed Deaths or Recovered")
 	parser.add_argument("--scale", default="log", help="log or linear or symlog or logit")
-	parser.add_argument("--china", type=int, default=1, help="0=exclude, 1=include, 2=only")
-	parser.add_argument("--only-region", help="'"+"' '".join(region_names)+"'")
+	parser.add_argument("-r","--regions", nargs="*", help="Regions to graph. If none specified, all included. Options: '"+"' '".join(list(all_regions))+"'")
+	parser.add_argument("-c","--countries", nargs="*", help="Countries to graph. If none specified, all included.")
 	parser.add_argument("--no-legend", dest="legend", default=True, action="store_false")
 	parser.add_argument("--per-capita", default=False, action="store_true")
 	args = parser.parse_args()
+	
+	args.countries = [] if args.countries is None else ["Mainland China","US","UK"] if len(args.countries)==0 else args.countries
+	args.regions = [] if args.regions is None else list(all_regions) if len(args.regions)==0 else args.regions
 	
 	from datetime import datetime as dt
 	import pandas as pd
@@ -166,4 +156,4 @@ if __name__ == "__main__":
 	
 	for which in args.which:
 		df = pd.read_csv(f"https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-{which}.csv")
-		graph_df(df, args.legend, args.scale, args.per_capita, args.china, args.only_region)
+		graph(df, args.legend, args.scale, args.per_capita, args.countries, args.regions)
