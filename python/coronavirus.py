@@ -92,7 +92,7 @@ def get_population(region:str):
 
 get_population.df = None
 
-def graph_arr(ax, arr, per_capita:bool, region_list:list):
+def graph_arr(ax, arr, name:str, per_capita:bool, region_list:list, line_width:int):
 	arr.index = pd.to_datetime(arr.index)
 	if per_capita:
 		n:int = 0
@@ -103,26 +103,25 @@ def graph_arr(ax, arr, per_capita:bool, region_list:list):
 				# returned None
 				raise Exception(f"Cannot get population for: {_subregion}")
 		arr = arr.divide(n)
-	arr.plot(ax=ax)
+	arr.plot(ax=ax, linewidth=line_width, label=name)
 	n_infected_now:int = arr[-1]
 	plt.annotate(n_infected_now, xy=(plt.gca().get_xlim()[1],n_infected_now))
 
 
-def graph(df, inc_legend:bool, yscale:str, per_capita:bool, countries:list, regions:list):
+def graph(df, yscale:str, per_capita:bool, countries:list, regions:list):
 	drop_cols:list = ["Province/State","Country/Region","Lat","Long"]
 	fig, ax = plt.subplots()
 	plt.margins(x=0,y=0)
-	_region_names:list = []
+	
 	for region in regions:
-		_region_names.append(region)
 		_df = df.loc[df["Country/Region"].isin(all_regions[region])].drop(columns=drop_cols)
-		graph_arr(ax, _df.sum(axis=0), per_capita, all_regions[region])
+		graph_arr(ax, _df.sum(axis=0), region, per_capita, all_regions[region], 2)
+	
 	for country in countries:
-		_region_names.append(country)
 		_df = df.loc[df["Country/Region"]==country].drop(columns=drop_cols)
-		graph_arr(ax, _df.sum(axis=0), per_capita, [country])
-	if inc_legend:
-		ax.legend(_region_names)
+		graph_arr(ax, _df.sum(axis=0), country, per_capita, [country], 1)
+	
+	ax.legend(loc="best")
 	ax.set_yscale(yscale)
 
 	plt.show()
@@ -136,9 +135,8 @@ if __name__ == "__main__":
 	parser.add_argument("--scale", default="log", help="log or linear or symlog or logit")
 	parser.add_argument("-r","--regions", nargs="*", help="Regions to graph. If none specified, all included. Options: '"+"' '".join(list(all_regions))+"'")
 	parser.add_argument("-c","--countries", nargs="*", help="Countries to graph. If none specified, all included.")
-	parser.add_argument("--no-legend", dest="legend", default=True, action="store_false")
 	parser.add_argument("--per-capita", default=False, action="store_true")
-	parser.add_argument("-d","--debug", default=False, action="store_true", help="Debug")
+	parser.add_argument("-v","--verbose", action="count")
 	args = parser.parse_args()
 	
 	args.countries = [] if args.countries is None else ["Mainland China","US","UK"] if len(args.countries)==0 else args.countries
@@ -153,9 +151,15 @@ if __name__ == "__main__":
 	for which in args.which:
 		df = pd.read_csv(f"https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-{which}.csv")
 		
-		if args.debug:
+		if args.verbose > 0:
 			unregioned_countries:list = df.loc[~df["Country/Region"].isin([c for r in all_regions.values() for c in r])]["Country/Region"].tolist()
 			if len(unregioned_countries) != 0:
-				print(f"Unregioned countries: {'; '.join(unregioned_countries)}")
+				_ = "\n\t"
+				print(f"Unregioned countries{_}{_.join(unregioned_countries)}")
+		if args.verbose > 1:
+			for region, countries in all_regions.items():
+				print(region)
+				for country in countries:
+					print(f"\t{country}")
 		
-		graph(df, args.legend, args.scale, args.per_capita, args.countries, args.regions)
+		graph(df, args.scale, args.per_capita, args.countries, args.regions)
