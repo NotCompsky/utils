@@ -138,6 +138,7 @@ if __name__ == "__main__":
 	parser.add_argument("-c","--countries", nargs="*", help="Countries to graph. If none specified, all included.")
 	parser.add_argument("--no-legend", dest="legend", default=True, action="store_false")
 	parser.add_argument("--per-capita", default=False, action="store_true")
+	parser.add_argument("-d","--debug", default=False, action="store_true", help="Debug")
 	args = parser.parse_args()
 	
 	args.countries = [] if args.countries is None else ["Mainland China","US","UK"] if len(args.countries)==0 else args.countries
@@ -151,4 +152,10 @@ if __name__ == "__main__":
 	
 	for which in args.which:
 		df = pd.read_csv(f"https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-{which}.csv")
+		
+		if args.debug:
+			unregioned_countries:list = df.loc[~df["Country/Region"].isin([c for r in all_regions.values() for c in r])]["Country/Region"].tolist()
+			if len(unregioned_countries) != 0:
+				print(f"Unregioned countries: {'; '.join(unregioned_countries)}")
+		
 		graph(df, args.legend, args.scale, args.per_capita, args.countries, args.regions)
