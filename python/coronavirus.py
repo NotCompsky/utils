@@ -92,7 +92,10 @@ def get_population(region:str):
 
 get_population.df = None
 
-def graph_arr(ax, arr, name:str, per_capita:bool, region_list:list, line_width:int):
+def graph_arr(_min:int, ax, arr, name:str, per_capita:bool, region_list:list, line_width:int):
+	n_infected_now:int = arr[-1]
+	if n_infected_now < _min:
+		return
 	arr.index = pd.to_datetime(arr.index)
 	if per_capita:
 		n:int = 0
@@ -104,22 +107,25 @@ def graph_arr(ax, arr, name:str, per_capita:bool, region_list:list, line_width:i
 				raise Exception(f"Cannot get population for: {_subregion}")
 		arr = arr.divide(n)
 	arr.plot(ax=ax, linewidth=line_width, label=name)
-	n_infected_now:int = arr[-1]
 	plt.annotate(n_infected_now, xy=(plt.gca().get_xlim()[1],n_infected_now))
 
 
-def graph(df, yscale:str, per_capita:bool, countries:list, regions:list):
+def graph(df, yscale:str, per_capita:bool, countries:list, regions:list, _min:int, split_regions:bool):
 	drop_cols:list = ["Province/State","Country/Region","Lat","Long"]
 	fig, ax = plt.subplots()
 	plt.margins(x=0,y=0)
 	
 	for region in regions:
-		_df = df.loc[df["Country/Region"].isin(all_regions[region])].drop(columns=drop_cols)
-		graph_arr(ax, _df.sum(axis=0), region, per_capita, all_regions[region], 2)
+		_countries = all_regions[region]
+		if split_regions:
+			countries += _countries
+			continue
+		_df = df.loc[df["Country/Region"].isin(_countries)].drop(columns=drop_cols)
+		graph_arr(_min, ax, _df.sum(axis=0), region, per_capita, _countries, 2)
 	
 	for country in countries:
 		_df = df.loc[df["Country/Region"]==country].drop(columns=drop_cols)
-		graph_arr(ax, _df.sum(axis=0), country, per_capita, [country], 1)
+		graph_arr(_min, ax, _df.sum(axis=0), country, per_capita, [country], 1)
 	
 	ax.legend(loc="best")
 	ax.set_yscale(yscale)
@@ -135,8 +141,10 @@ if __name__ == "__main__":
 	parser.add_argument("--scale", default="log", help="log or linear or symlog or logit")
 	parser.add_argument("-r","--regions", nargs="*", help="Regions to graph. If none specified, all included. Options: '"+"' '".join(list(all_regions))+"'")
 	parser.add_argument("-c","--countries", nargs="*", help="Countries to graph. If none specified, all included.")
+	parser.add_argument("--split-regions", default=False, action="store_true", help="Map each country individually in each region")
+	parser.add_argument("--min", default=0, type=int, help="Ignore countries with fewer cases")
 	parser.add_argument("--per-capita", default=False, action="store_true")
-	parser.add_argument("-v","--verbose", action="count")
+	parser.add_argument("-v","--verbose", default=0, action="count")
 	args = parser.parse_args()
 	
 	args.countries = [] if args.countries is None else ["Mainland China","US","UK"] if len(args.countries)==0 else args.countries
@@ -162,4 +170,4 @@ if __name__ == "__main__":
 				for country in countries:
 					print(f"\t{country}")
 		
-		graph(df, args.scale, args.per_capita, args.countries, args.regions)
+		graph(df, args.scale, args.per_capita, args.countries, args.regions, args.min, args.split_regions)
