@@ -1,4 +1,4 @@
-default: ~/bin/countdir ~/bin/lsdir ~/bin/ascii ~/bin/bits2i ~/bin/i2bits ~/bin/f2c ~/bin/f2m ~/bin/pound2kg ~/bin/camel2snake ~/bin/get_yt_ids ~/bin/capitalise ~/bin/dblqt ~/bin/duration-of ~/bin/echo-if-contains ~/bin/countdir-r ~/bin/ip2i
+default: ~/bin/countdir ~/bin/lsdir ~/bin/ascii ~/bin/bits2i ~/bin/i2bits ~/bin/f2c ~/bin/f2m ~/bin/pound2kg ~/bin/camel2snake ~/bin/get_yt_ids ~/bin/capitalise ~/bin/dblqt ~/bin/duration-of ~/bin/echo-if-contains ~/bin/countdir-r ~/bin/ip2i ~/bin/extract-audio
 
 ~/bin/countdir:
 	cc countdir.c -o ~/bin/countdir -O3
@@ -40,6 +40,9 @@ default: ~/bin/countdir ~/bin/lsdir ~/bin/ascii ~/bin/bits2i ~/bin/i2bits ~/bin/
 
 ~/bin/duration-of:
 	cc duration-of.c -O3 -o ~/bin/duration-of -lavcodec -lavformat
+
+~/bin/extract-audio:
+	cc extract-audio.c -O3 -o ~/bin/extract-audio -lavformat -lavcodec -lavutil
 
 ~/bin/echo-if-contains:
 	cc echo-if-contains.c -O3 -o ~/bin/echo-if-contains
