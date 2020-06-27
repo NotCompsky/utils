@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+
+
+# Returns a link to the Tweet referenced by a screenshot.
+
+
+if [ $# -eq 3 ]; then
+	dummy=1
+else
+	echo "tweet [USERNAME] [MINUTE] [YY-MM-DD]" >&2
+	exit
+fi
+
+
+USERNAME="$1"
+MINUTE="$2"
+DATE2="$3"
+DATE1="$(date -d "$DATE2-1 days" +'%Y-%m-%d')"
+DATE3="$(date -d "$DATE2+1 days" +'%Y-%m-%d')"
+DATE1_s="$(date -d "$DATE1" +%s)"
+
+
+is_in(){
+	for arg in "${@:2}"; do
+		if [ "$arg" = "$1" ]; then
+			echo 1
+			return
+		fi
+	done
+}
+
+
+is_dt_plausible(){
+	# Check whether datetime is plausible, taking into account that the screenshot may be from a different time-zone.
+	# i.e. day may be a day out, hour is irrelevant, but the minutes and seconds may be fully accurate.
+	date="$1"
+	time="$2"
+	
+	IFS=':' read -r h m s <<< "$time"
+	
+	if [ "$m" = "$MINUTE" ]; then
+		if [ "$(is_in "$date" "$DATE1" "$DATE2" "$DATE3")" ]; then
+			echo 1
+			return
+		fi
+	fi
+}
+
+
+while read tweet_id date time BST lt_username_gt text; do
+	#echo "    $tweet_id $date $time $BST $lt_username_gt $text"
+	if [ "$(is_dt_plausible "$date" "$time")" = "" ]; then
+		continue
+	fi
+	if [ "$(echo "$text" | grep -E "$PATTERN")" ]; then
+		echo "https://twitter.com/$USERNAME/status/$tweet_id"
+	fi
+	if [ "$(date -d "$date" +%s)" -lt "$DATE1_s" ]; then
+		break
+	fi
+done < <(twint -u "$USERNAME")
