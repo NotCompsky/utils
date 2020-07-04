@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 
+from urllib.error import HTTPError
 import os
 
 
@@ -56,7 +57,7 @@ def get_population(region:str):
 
 get_population.df = None
 
-def graph_arr(_min:int, ax, arr, colour:str, name:str, per_capita:bool, region_list:list, line_width:int):
+def graph_arr(_min:int, ax, arr, colour:str, name:str, per_capita:bool, region_list:list, line_width:int, linestyle:str):
 	n_infected_now:int = arr[-1]
 	if n_infected_now < _min:
 		return
@@ -70,11 +71,11 @@ def graph_arr(_min:int, ax, arr, colour:str, name:str, per_capita:bool, region_l
 				# returned None
 				raise Exception(f"Cannot get population for: {_subregion}")
 		arr = arr.divide(n)
-	arr.plot(ax=ax, linewidth=line_width, label=name, color=colour)
+	arr.plot(ax=ax, linewidth=line_width, linestyle=linestyle, label=name, color=colour)
 	plt.annotate(n_infected_now, xy=(plt.gca().get_xlim()[1],n_infected_now))
 
 
-def graph(name:str, df, df2, yscale:str, per_capita:bool, countries:list, regions:list, _min:int, split_regions:bool, daily_change:bool, is_total:bool):
+def graph(name:str, df, df2, yscale:str, per_capita:bool, countries:list, regions:list, highlight:list, _min:int, split_regions:bool, daily_change:bool, is_total:bool):
 	drop_cols:list = ["Province/State","Country/Region","Lat","Long"]
 	fig, ax = plt.subplots()
 	plt.margins(x=0,y=0)
@@ -99,7 +100,8 @@ def graph(name:str, df, df2, yscale:str, per_capita:bool, countries:list, region
 			_df = _df.div(_df2)
 		if daily_change:
 			_df = to_daily_change(_df)
-		graph_arr(_min, ax, _df.sum(axis=0), _colour, region, per_capita, _countries, 2)
+		linestyle = "-" if region in highlight else "--"
+		graph_arr(_min, ax, _df.sum(axis=0), _colour, region, per_capita, _countries, 2, linestyle)
 	
 	for country in countries:
 		_df = df.loc[df["Country/Region"]==country].drop(columns=drop_cols)
@@ -108,7 +110,8 @@ def graph(name:str, df, df2, yscale:str, per_capita:bool, countries:list, region
 			_df = _df.div(_df2)
 		if daily_change:
 			_df = to_daily_change(_df)
-		graph_arr(_min, ax, _df.sum(axis=0), None, country, per_capita, [country], 1)
+		linestyle = "-" if country in highlight else "--"
+		graph_arr(_min, ax, _df.sum(axis=0), None, country, per_capita, [country], 1, linestyle)
 	
 	plt.title(name + (" per day" if daily_change else ""))
 	ax.legend(loc="best")
@@ -118,7 +121,11 @@ def graph(name:str, df, df2, yscale:str, per_capita:bool, countries:list, region
 
 
 def get_tbl(s:str):
-	return pd.read_csv(f"https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-{which}.csv")
+	url:str = f"https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_{which}_global.csv"
+	try:
+		return pd.read_csv(url)
+	except HTTPError as e:
+		raise Exception(f"{e}: {url}")
 
 
 def to_daily_change(df):
@@ -133,10 +140,12 @@ if __name__ == "__main__":
 	import argparse
 	
 	parser = argparse.ArgumentParser()
-	parser.add_argument("which", nargs="*", help="Confirmed Deaths or Recovered")
+	parser.add_argument("which", nargs="*", help="confirmed deaths or recovered")
 	parser.add_argument("--scale", default="log", help="log or linear or symlog or logit")
 	parser.add_argument("-r","--regions", nargs="*", help="Regions to graph. If none specified, all included. Options: '"+"' '".join(list(all_regions))+"'")
-	parser.add_argument("-c","--countries", nargs="*", help="Countries to graph. If none specified, all included.")
+	parser.add_argument("-R","--Regions", default=[], nargs="+", help="As --regions but highlighted")
+	parser.add_argument("-c","--countries", nargs="*", help="As --countries but highlighted")
+	parser.add_argument("-C","--Countries", default=[], nargs="*", help="Countries to graph. If none specified, all included.")
 	parser.add_argument("--split-regions", default=False, action="store_true", help="Map each country individually in each region")
 	parser.add_argument("--min", default=0, type=int, help="Ignore countries with fewer cases")
 	parser.add_argument("--per-capita", default=False, action="store_true")
@@ -144,7 +153,12 @@ if __name__ == "__main__":
 	parser.add_argument("-q","--quiet",   default=0, action="count")
 	parser.add_argument("-d","--daily-change", default=False, action="store_true")
 	parser.add_argument("--total", default=False, action="store_true")
+	parser.add_argument("--region-dir", default=False, action="store_true", help="Display the directory where regions are stored, and exit")
 	args = parser.parse_args()
+	
+	if args.region_dir:
+		print(REGIONS_DIR)
+		exit(0)
 	
 	verbosity:int = 1 + args.verbose - args.quiet
 	
@@ -185,4 +199,4 @@ if __name__ == "__main__":
 						print(f"\t{country}")
 			_printed_debug_reports = True
 		
-		graph(_which, df, df2, args.scale, args.per_capita, args.countries, args.regions, args.min, args.split_regions, args.daily_change, args.total)
+		graph(_which, df, df2, args.scale, args.per_capita, args.countries+args.Countries, args.regions+args.Regions, args.Countries+args.Regions, args.min, args.split_regions, args.daily_change, args.total)
