@@ -22,3 +22,6 @@ default: ~/bin/diff-bin ~/bin/boost-regex ~/bin/is-small-prime ~/bin/tcpdump2db 
 
 ~/bin/html-lexer222:
 	c++ html_lexer.cpp -Os -o ~/bin/html-lexer -llexbor-html -llexbor-dom
+
+~/bin/html-lexer:
+	c++ html_lexer/main.cpp html_lexer/parser.cpp html_lexer/element.cpp -Os -o /tmp/html-lexer -llexbor-html -llexbor-dom
