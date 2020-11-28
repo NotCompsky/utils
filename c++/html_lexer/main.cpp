@@ -51,5 +51,3 @@ int main(int argc,  char* const* argv){
 	
 	return 0;
 }
-
-template class Collection<1000>;
