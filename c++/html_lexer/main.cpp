@@ -42,7 +42,7 @@ int main(int argc,  char* const* argv){
 	if (f == nullptr)
 		return 1;
 	
-	char html[100 * 1024];
+	char html[1000 * 1024];
 	const size_t html_sz = fread(html,  1,  sizeof(html) - 1,  f);
 	if (html_sz == 0)
 		return 2;
@@ -51,7 +51,7 @@ int main(int argc,  char* const* argv){
 	Doc doc(parser, html, html_sz);
 	const std::string_view v = find_element_attr(doc, argv[2], argv[3]);
 	if (v == null_str_view)
-		printf("No such element found\n");
+		printf("No such element/attribute found\n");
 	else
 		printf("%.*s\n", (int)v.size(), v.data());
 	
