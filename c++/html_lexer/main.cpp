@@ -13,9 +13,15 @@ extern "C" {
 typedef unsigned char uchar;
 
 
-void log(const char* const str){
-	printf("%s\n", str);
-	fflush(stdout);
+constexpr
+std::string_view null_str_view{nullptr, 0};
+
+
+std::string_view find_element_attr(const Doc& doc,  char* const selector_path,  const char* const attr){
+	Element element(doc.get_element_from_class_selector_path(selector_path));
+	if (element.is_null())
+		return null_str_view;
+	return element.get_value(attr);
 }
 
 
@@ -46,12 +52,11 @@ int main(int argc,  char* const* argv){
 	
 	Parser parser;
 	Doc doc(parser, html, html_sz);
-	Element element(doc.get_element_from_class_selector_path(argv[2]));
-	if (not element.is_null()){
-		const std::string_view v = element.get_value(argv[3]);
-		printf("%.*s\n", (int)v.size(), v.data());
-	} else
+	const std::string_view v = find_element_attr(doc, argv[2], argv[3]);
+	if (v == null_str_view)
 		printf("No such element found\n");
+	else
+		printf("%.*s\n", (int)v.size(), v.data());
 	
 	return 0;
 }
