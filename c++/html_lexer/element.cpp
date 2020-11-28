@@ -62,6 +62,30 @@ bool Element::has_class_name(const char* const class_name) const {
 	return streq(class_name, actual_class_name, len);
 }
 
+std::string_view Element::get_inner_text() const {
+	lxb_dom_node_t* node = this->element->node.first_child;
+	while (node != nullptr){
+		if (node->type == LXB_DOM_NODE_TYPE_TEXT)
+			break;
+		node = node->next;
+	}
+	lexbor_str_t str = lxb_dom_interface_text(node)->char_data.data;
+	printf("Inner text has length %lu\n", str.length);
+	return std::string_view(reinterpret_cast<const char*>(str.data), str.length);
+}
+
+std::string_view Element::get_attr(const char* const name) const {
+	size_t len = 0;
+	const char* const value = reinterpret_cast<const char*>(lxb_dom_element_get_attribute(this->element, (const lxb_char_t*)name, strlen(name), &len));
+	return std::string_view(value, len);
+}
+
+std::string_view Element::get_value(const char* const name) const {
+	if ((name[0] == '.') and (name[1] == 0))
+		return this->get_inner_text();
+	return get_attr(name);
+}
+
 void Element::print_tag_name() const {
 	size_t len = 0;
 	const char* tag_name;

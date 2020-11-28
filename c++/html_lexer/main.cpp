@@ -20,8 +20,18 @@ void log(const char* const str){
 
 
 int main(int argc,  char* const* argv){
-	if (argc != 3){
-		printf("Usage: [HTML_FILE] [SELECTOR_PATH]\n");
+	if (argc != 4){
+		printf(
+			"USAGE\n"
+			"    HTML_FILE SELECTOR_PATH ATTRIBUTE\n"
+			"OPTIONS\n"
+			"    ATTRIBUTE\n"
+			"        Value of . gets the node's inner text\n"
+			"        If the element is found but has no such attribute, NULL is returned\n"
+			"EXAMPLES\n"
+			"    /tmp/html @div#profile-img\n"
+			"    /tmp/html @div#profile-img>@img src\n"
+		);
 		return 0;
 	}
 	
@@ -37,9 +47,10 @@ int main(int argc,  char* const* argv){
 	Parser parser;
 	Doc doc(parser, html, html_sz);
 	Element element(doc.get_element_from_class_selector_path(argv[2]));
-	if (not element.is_null())
-		printf("Found element\n");
-	else
+	if (not element.is_null()){
+		const std::string_view v = element.get_value(argv[3]);
+		printf("%.*s\n", (int)v.size(), v.data());
+	} else
 		printf("No such element found\n");
 	
 	return 0;
