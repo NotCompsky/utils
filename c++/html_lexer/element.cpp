@@ -20,6 +20,8 @@ bool Element::has_id(const char* const id) const {
 	printf("has_id %s ?\n", id); fflush(stdout);
 	if (id == nullptr)
 		return true;
+	if (this->element->node.type != LXB_DOM_NODE_TYPE_ELEMENT)
+		return false;
 	size_t len = 0;
 	const char* const actual_id = reinterpret_cast<const char*>(lxb_dom_element_get_attribute(this->element, (const lxb_char_t*)"id", 2, &len));
 	return streq(id, actual_id, len);
@@ -27,10 +29,10 @@ bool Element::has_id(const char* const id) const {
 
 bool Element::has_tag_name(const char* const tag_name) const {
 	printf("has_tag_name %s ?\n", tag_name); fflush(stdout);
-	if (this->element->node.type != LXB_DOM_NODE_TYPE_ELEMENT)
-		return false;
 	if (tag_name == nullptr)
 		return true;
+	if (this->element->node.type != LXB_DOM_NODE_TYPE_ELEMENT)
+		return false;
 	size_t len = 0;
 	const char* const actual_tag_name = reinterpret_cast<const char*>(lxb_dom_element_qualified_name(this->element, &len));
 	return streq(tag_name, actual_tag_name, len);
@@ -40,6 +42,8 @@ bool Element::has_attr(const char* const attr_name,  const char* const attr_val)
 	printf("has_attr %s %s ?\n", attr_name, attr_val); fflush(stdout);
 	if (attr_name == nullptr)
 		return true;
+	if (this->element->node.type != LXB_DOM_NODE_TYPE_ELEMENT)
+		return false;
 	size_t len = 0;
 	const char* const actual_val = reinterpret_cast<const char*>(lxb_dom_element_get_attribute(this->element, (const lxb_char_t*)attr_name, strlen(attr_name), &len));
 	if (actual_val == nullptr)
