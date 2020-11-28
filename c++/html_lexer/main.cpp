@@ -8,13 +8,10 @@ extern "C" {
 #include "doc.hpp"
 #include "parser.hpp"
 #include "str_utils.hpp"
+#include "nullstr.hpp"
 
 
 typedef unsigned char uchar;
-
-
-constexpr
-std::string_view null_str_view{nullptr, 0};
 
 
 std::string_view find_element_attr(const Doc& doc,  char* const selector_path,  const char* const attr){
