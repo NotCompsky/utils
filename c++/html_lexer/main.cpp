@@ -38,6 +38,27 @@ int main(int argc,  char* const* argv){
 		return 0;
 	}
 	
+	/*
+	 * Examples
+	 *
+	 * BBC News article page: https://web.archive.org/web/20201128041650/https://www.bbc.co.uk/news/world-middle-east-55111064
+	 *   Title: [argv0] [/path/to/html] "*@h1#main-heading" .
+	 *   Datetime:                      "*@time:datetime" datetime
+	 * 
+	 * NYT
+	 *   Title:    "*@h1:itemprop=headline" . // Not @title .
+	 *   Subtitle: "*@h1:itemprop=headline>^^>+3" .
+	 *     Find the headline, then go up two nodes and get the 3rd child node
+	 *   Author:   "*@p:itemprop=author>@a>@span" .
+	 *   Datetime: "*@p:itemprop=author>^^^>@ul>*@time" datetime
+	 * 
+	 * WSJ: https://web.archive.org/web/20201125032555/https://www.wsj.com/articles/mayor-pete-and-the-purdue-charter-11580074911
+	 *   Title:    "*@h1.wsj-article-headline" .
+	 *   Subtitle: "*@h2.sub-head" .
+	 *   Author:   "*@div.author-container>@button" .
+	 *   Datetime: "*@div.byline>time" .
+	 */
+	
 	FILE* f = fopen(argv[1], "rb");
 	if (f == nullptr)
 		return 1;
