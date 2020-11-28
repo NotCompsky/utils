@@ -21,7 +21,6 @@ lxb_dom_document_t* Doc::get_dom_doc() const {
 
 template<size_t n_elements>
 bool Doc::get_elements_of_class_name(Collection<n_elements>& collection,  const char* name) const {
-	printf("Looking for elements of class: %s\n", name);
 	return Element(lxb_dom_interface_element(this->document)).get_elements_of_class_name(collection, name);
 }
 
@@ -74,9 +73,6 @@ lxb_dom_element_t* Doc::get_element_from_class_selector_path(char* selector_path
 		if_not_null_then_set_prev_char_to_zero(class_name);
 		if_not_null_then_set_prev_char_to_zero(attr_name);
 		if_not_null_then_set_prev_char_to_zero(attr_val);
-		
-		
-		printf("id %s\ntag %s\nclass %s\nattr %s = %s\nindex %u\n\n", id_name, tag_name, class_name, attr_name, attr_val, indx); fflush(stdout);
 		
 		if (level_depth == 0)
 			element = Element(element).get_element_given_tag_class_attr_indx(id_name, tag_name, class_name, attr_name, attr_val, indx);

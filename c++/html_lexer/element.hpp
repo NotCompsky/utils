@@ -54,12 +54,10 @@ Element::Element(const Collection<n>& collection,  size_t i)
 
 template<size_t n_elements>
 bool Element::get_elements_of_tag_name(Collection<n_elements>& collection,  const char* name) const {
-	printf("Looking for elements of tag name: %s\n", name);
 	return (lxb_dom_elements_by_tag_name(this->element, &collection.collection, reinterpret_cast<const lxb_char_t*>(name), strlen(name)) != LXB_STATUS_OK);
 }
 
 template<size_t n_elements>
 bool Element::get_elements_of_class_name(Collection<n_elements>& collection,  const char* name) const {
-	printf("Looking for elements of class: %s\n", name);
 	return (lxb_dom_elements_by_class_name(this->element, &collection.collection, reinterpret_cast<const lxb_char_t*>(name), strlen(name)) != LXB_STATUS_OK);
 }
