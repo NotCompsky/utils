@@ -78,13 +78,26 @@ lxb_dom_element_t* Doc::get_element_from_class_selector_path(char* selector_path
 		if_not_null_then_set_prev_char_to_zero(attr_name);
 		if_not_null_then_set_prev_char_to_zero(attr_val);
 		
-		if (level_depth == 0)
+		if (is_walk)
 			element = Element(element).get_element_given_tag_class_attr_indx(id_name, tag_name, class_name, attr_name, attr_val, indx);
 		else
 			element = Element(element).get_direct_child_element_given_tag_class_attr_indx(id_name, tag_name, class_name, attr_name, attr_val, indx);
 		
 		if (element == nullptr)
 			break;
-	} while(selector_path != nullptr);
+		
+		if (selector_path == nullptr)
+			break;
+		if (*selector_path == '^'){
+			while (*selector_path == '^'){
+				element = lxb_dom_interface_element(element->node.parent);
+				++selector_path;
+			}
+			if (*selector_path == 0)
+				break;
+			element = lxb_dom_interface_element(element->node.parent);
+			// Have to do it once more to cancel out the immediate stepping down a level
+		}
+	}
 	return element;
 }
