@@ -1,6 +1,7 @@
 #include "element.hpp"
 #include "collection_h.hpp"
 #include "str_utils.hpp"
+#include "nullstr.hpp"
 
 
 Element::Element(lxb_dom_element_t* _el)
@@ -64,6 +65,8 @@ std::string_view Element::get_inner_text() const {
 			break;
 		node = node->next;
 	}
+	if (node == nullptr)
+		return null_str_view;
 	lexbor_str_t str = lxb_dom_interface_text(node)->char_data.data;
 	return std::string_view(reinterpret_cast<const char*>(str.data), str.length);
 }
