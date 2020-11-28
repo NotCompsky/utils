@@ -145,7 +145,7 @@ lxb_dom_element_t* Element::get_element_given_tag_class_attr_indx(const char* id
 	return nullptr;
 }
 
-lxb_dom_element_t* Element::get_direct_child_element_given_tag_class_attr_indx(const char* id_name,  const char* tag_name,  const char* class_name,  const char* attr_name,  const char* attr_val,  const unsigned indx) const {
+lxb_dom_element_t* Element::get_direct_child_element_given_tag_class_attr_indx(const char* id_name,  const char* tag_name,  const char* class_name,  const char* attr_name,  const char* attr_val,  unsigned indx) const {
 	lxb_dom_node_t* node = this->element->node.first_child;
 	while (node != nullptr){
 		if ((node->type == LXB_DOM_NODE_TYPE_ELEMENT) and (not lxb_html_node_is_void(node))){
@@ -154,7 +154,8 @@ lxb_dom_element_t* Element::get_direct_child_element_given_tag_class_attr_indx(c
 				if (_element.has_tag_name(tag_name))
 					if (_element.has_class_name(class_name))
 						if (_element.has_attr(attr_name, attr_val))
-							break;
+							if (indx-- == 0)
+								break;
 		}
 		node = node->next;
 	}
