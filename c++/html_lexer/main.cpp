@@ -27,37 +27,10 @@ int main(int argc,  char* const* argv){
 		printf(
 			"USAGE\n"
 			"    HTML_FILE SELECTOR_PATH ATTRIBUTE\n"
-			"OPTIONS\n"
-			"    ATTRIBUTE\n"
-			"        Value of . gets the node's inner text\n"
-			"        If the element is found but has no such attribute, NULL is returned\n"
-			"EXAMPLES\n"
-			"    /tmp/html @div#profile-img\n"
-			"    /tmp/html @div#profile-img>@img src\n"
+			#include "help.hpp"
 		);
 		return 0;
 	}
-	
-	/*
-	 * Examples
-	 *
-	 * BBC News article page: https://web.archive.org/web/20201128041650/https://www.bbc.co.uk/news/world-middle-east-55111064
-	 *   Title: [argv0] [/path/to/html] "*@h1#main-heading" .
-	 *   Datetime:                      "*@time:datetime" datetime
-	 * 
-	 * NYT
-	 *   Title:    "*@h1:itemprop=headline" . // Not @title .
-	 *   Subtitle: "*@h1:itemprop=headline>^^>+3" .
-	 *     Find the headline, then go up two nodes and get the 3rd child node
-	 *   Author:   "*@p:itemprop=author>@a>@span" .
-	 *   Datetime: "*@p:itemprop=author>^^^>@ul>*@time" datetime
-	 * 
-	 * WSJ: https://web.archive.org/web/20201125032555/https://www.wsj.com/articles/mayor-pete-and-the-purdue-charter-11580074911
-	 *   Title:    "*@h1.wsj-article-headline" .
-	 *   Subtitle: "*@h2.sub-head" .
-	 *   Author:   "*@div.author-container>@button" .
-	 *   Datetime: "*@div.byline>time" .
-	 */
 	
 	FILE* f = fopen(argv[1], "rb");
 	if (f == nullptr)
