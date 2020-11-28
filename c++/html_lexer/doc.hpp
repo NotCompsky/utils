@@ -38,7 +38,8 @@ void if_not_null_then_set_prev_char_to_zero(char* str){
 }
 
 lxb_dom_element_t* Doc::get_element_from_class_selector_path(char* selector_path) const {
-	/* selector_path being @TAG.CLASS#ID:ATTR=VALUE+INDEX>...>
+	/* selector_path being GLOBAL@TAG.CLASS#ID:ATTR=VALUE+INDEX>...>
+	 * GLOBAL: If equal to *, then it is a walk, otherwise it only searches direct children
 	 * e.g. (omitting >:ATTRIBUTE):
 	 *   @div>@a                       <div><a></a></div>
 	 *   @div.display-box>@img         <div class="display-box"><img/></div>
@@ -46,11 +47,14 @@ lxb_dom_element_t* Doc::get_element_from_class_selector_path(char* selector_path
 	 *   .foo:data-bar=ree           <??? class="foo" data-bar="ree"></???>
 	 *   @div>>>@a                     <div><???><???><???><a></a></???></???></???>
 	 *   div+2                       <div/><div/><div/>  (3rd div)
+	 * 
+	 * If > immediately precedes a number of ^, then go up levels according to the number of ^
+	 * 
 	 * Only the first element is a genuine global search - all the subsequent levels only filter direct child nodes. WARNING: Currently, it is assumed that a tag_name or class_name is supplied in the top-most level.
 	 */
 	lxb_dom_element_t* element = this->document->dom_document.element;
-	unsigned level_depth = 0;
-	do {
+	while(true){
+		const bool is_walk = selector_path[0] == '*';
 		char* id_name    = after_next_char(selector_path, '#');
 		char* tag_name   = after_next_char(selector_path, '@');
 		char* class_name = after_next_char(selector_path, '.');
