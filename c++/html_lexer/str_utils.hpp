@@ -42,5 +42,5 @@ bool streq(const char* a,  Char* b,  unsigned length_to_compare){
 		++b;
 		--length_to_compare;
 	}
-	return true;
+	return (*a == 0);
 }
