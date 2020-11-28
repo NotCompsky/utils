@@ -10,6 +10,7 @@ class Element {
   public:
 	lxb_dom_element_t* const element;
 	
+	Element(lxb_dom_node_t* node);
 	Element(lxb_dom_element_t* _el);
 	
 	template<size_t n>
@@ -17,7 +18,10 @@ class Element {
 	
 	bool is_null() const;
 	
+	bool has_id(const char* const id) const;
 	bool has_tag_name(const char* const tag_name) const;
+	bool has_attr(const char* const attr_name,  const char* const attr_val) const;
+	bool has_class_name(const char* const class_name) const;
 	
 	void print_tag_name() const;
 	
@@ -31,9 +35,9 @@ class Element {
 	template<size_t n_elements>
 	bool get_elements_of_class_name(Collection<n_elements>& collection,  const char* name) const;
 	
-	lxb_dom_element_t* get_element_given_tag_class_attr_indx(const char* tag_name,  const char* class_name,  const char* attr_name,  const char* attr_val,  const unsigned indx) const;
+	lxb_dom_element_t* get_element_given_tag_class_attr_indx(const char* id_name,  const char* tag_name,  const char* class_name,  const char* attr_name,  const char* attr_val,  const unsigned indx) const;
 	
-	lxb_dom_element_t* get_direct_child_element_given_tag_class_attr_indx(const char* tag_name,  const char* class_name,  const char* attr_name,  const char* attr_val,  const unsigned indx) const;
+	lxb_dom_element_t* get_direct_child_element_given_tag_class_attr_indx(const char* id_name,  const char* tag_name,  const char* class_name,  const char* attr_name,  const char* attr_val,  const unsigned indx) const;
 };
 
 

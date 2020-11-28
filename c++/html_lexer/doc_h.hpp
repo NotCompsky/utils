@@ -22,4 +22,6 @@ class Doc {
 	
 	template<size_t n_elements>
 	bool get_elements_of_class_name(Collection<n_elements>& collection,  const char* name) const;
+	
+	lxb_dom_element_t* get_element_from_class_selector_path(char* selector_path) const;
 };

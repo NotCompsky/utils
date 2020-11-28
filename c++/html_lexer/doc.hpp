@@ -2,6 +2,7 @@
 
 #include "doc.hpp"
 #include "notnull.hpp"
+#include "str_utils.hpp"
 
 
 Doc::Doc(Parser& parser,  const char* html,  const size_t html_sz)
@@ -22,4 +23,68 @@ template<size_t n_elements>
 bool Doc::get_elements_of_class_name(Collection<n_elements>& collection,  const char* name) const {
 	printf("Looking for elements of class: %s\n", name);
 	return Element(lxb_dom_interface_element(this->document)).get_elements_of_class_name(collection, name);
+}
+
+bool is_not_gt(const char* const a,  const char* const b){
+	return ((a == nullptr) or (b < a));
+}
+
+char* null_if_lt(char* const a,  char* const b){
+	return is_not_gt(a, b) ? b : nullptr;
+}
+
+void if_not_null_then_set_prev_char_to_zero(char* str){
+	if (str)
+		str[-1] = 0;
+}
+
+lxb_dom_element_t* Doc::get_element_from_class_selector_path(char* selector_path) const {
+	/* selector_path being @TAG.CLASS#ID:ATTR=VALUE+INDEX>...>
+	 * e.g. (omitting >:ATTRIBUTE):
+	 *   @div>@a                       <div><a></a></div>
+	 *   @div.display-box>@img         <div class="display-box"><img/></div>
+	 *   .display:onclick>@a          <??? class="display" onclick=???><a></a></???>
+	 *   .foo:data-bar=ree           <??? class="foo" data-bar="ree"></???>
+	 *   @div>>>@a                     <div><???><???><???><a></a></???></???></???>
+	 *   div+2                       <div/><div/><div/>  (3rd div)
+	 * Only the first element is a genuine global search - all the subsequent levels only filter direct child nodes. WARNING: Currently, it is assumed that a tag_name or class_name is supplied in the top-most level.
+	 */
+	lxb_dom_element_t* element = this->document->dom_document.element;
+	unsigned level_depth = 0;
+	do {
+		char* id_name    = after_next_char(selector_path, '#');
+		char* tag_name   = after_next_char(selector_path, '@');
+		char* class_name = after_next_char(selector_path, '.');
+		char* attr_name  = after_next_char(selector_path, ':');
+		char* attr_val   = after_next_char(selector_path, '=');
+		char* indx_val   = after_next_char(selector_path, '+');
+		selector_path = after_next_char(selector_path, '>');
+		id_name    = null_if_lt(selector_path, id_name);
+		tag_name   = null_if_lt(selector_path, tag_name);
+		class_name = null_if_lt(selector_path, class_name);
+		attr_name  = null_if_lt(selector_path, attr_name);
+		attr_val   = null_if_lt(selector_path, attr_val);
+		unsigned indx = 0;
+		if (indx_val and is_not_gt(selector_path, indx_val))
+			indx = a2n<unsigned>(indx_val);
+		
+		if_not_null_then_set_prev_char_to_zero(selector_path);
+		if_not_null_then_set_prev_char_to_zero(id_name);
+		if_not_null_then_set_prev_char_to_zero(tag_name);
+		if_not_null_then_set_prev_char_to_zero(class_name);
+		if_not_null_then_set_prev_char_to_zero(attr_name);
+		if_not_null_then_set_prev_char_to_zero(attr_val);
+		
+		
+		printf("id %s\ntag %s\nclass %s\nattr %s = %s\nindex %u\n\n", id_name, tag_name, class_name, attr_name, attr_val, indx); fflush(stdout);
+		
+		if (level_depth == 0)
+			element = Element(element).get_element_given_tag_class_attr_indx(id_name, tag_name, class_name, attr_name, attr_val, indx);
+		else
+			element = Element(element).get_direct_child_element_given_tag_class_attr_indx(id_name, tag_name, class_name, attr_name, attr_val, indx);
+		
+		if (element == nullptr)
+			break;
+	} while(selector_path != nullptr);
+	return element;
 }

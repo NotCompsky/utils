@@ -1,21 +1,23 @@
 #pragma once
 
 
-inline
-const char* after_next_char(const char* str,  const char c){
+template<typename Char>
+Char* after_next_char(Char* str,  const char c){
 	while(true){
 		if (*str == 0)
 			return nullptr;
 		if (*str == c)
-			return str;
+			return str + 1;
 		++str;
 	}
 }
 
-inline
-bool streq(const char* a,  const char* b){
+template<typename Char>
+bool streq(const char* a,  Char* b){
 	if (a == nullptr)
 		return true;
+	if (b == nullptr)
+		return false;
 	while(true){
 		if (*a != *b)
 			return false;
@@ -27,10 +29,12 @@ bool streq(const char* a,  const char* b){
 }
 
 
-inline
-bool streq(const char* a,  const char* b,  unsigned length_to_compare){
+template<typename Char>
+bool streq(const char* a,  Char* b,  unsigned length_to_compare){
 	if (a == nullptr)
 		return true;
+	if (b == nullptr)
+		return false;
 	while(length_to_compare){
 		if (*a != *b)
 			return false;
