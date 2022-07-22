@@ -1,9 +1,14 @@
-default: ~/bin/countdir ~/bin/lsdir ~/bin/ascii ~/bin/bits2i ~/bin/i2bits ~/bin/f2c ~/bin/f2m ~/bin/pound2kg ~/bin/camel2snake ~/bin/get_yt_ids ~/bin/capitalise ~/bin/dblqt ~/bin/duration-of ~/bin/echo-if-contains ~/bin/countdir-r ~/bin/ip2i ~/bin/extract-audio
+default: ~/bin/countdir ~/bin/countdir-r ~/lib/countdir-lib.so ~/bin/lsdir ~/bin/ascii ~/bin/bits2i ~/bin/i2bits ~/bin/f2c ~/bin/f2m ~/bin/pound2kg ~/bin/camel2snake ~/bin/get_yt_ids ~/bin/capitalise ~/bin/dblqt ~/bin/duration-of ~/bin/echo-if-contains ~/bin/ip2i ~/bin/extract-audio ~/bin/get_basenames_in_dir ~/bin/get_names_and_basenames_in_dir ~/bin/historic2dollar
+
+~/bin/historic2dollar:
+	cc historic2dollar.c -o ~/bin/historic2dollar -O3
 
 ~/bin/countdir:
 	cc countdir.c -o ~/bin/countdir -O3
 ~/bin/countdir-r:
 	cc countdir.c -o ~/bin/countdir-r -O3 -DRECURSIVE
+~/lib/countdir-lib.so:
+	cc -shared -O2 -Wall -g countdir.c -fPIC -o ~/lib/countdir-lib.so
 
 ~/bin/lsdir:
 	cc lsdir.c -o ~/bin/lsdir -O3
@@ -49,3 +54,9 @@ default: ~/bin/countdir ~/bin/lsdir ~/bin/ascii ~/bin/bits2i ~/bin/i2bits ~/bin/
 
 ~/bin/ip2i:
 	cc ip2i.c -O3 -o ~/bin/ip2i
+
+~/bin/get_basenames_in_dir:
+	cc get_basenames_in_dir.c -o ~/bin/get_basenames_in_dir -Os
+
+~/bin/get_names_and_basenames_in_dir:
+	cc get_names_and_basenames_in_dir.c -o ~/bin/get_names_and_basenames_in_dir -Os
