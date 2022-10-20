@@ -2,10 +2,10 @@
 MySQL UDF
 
 # Installation:
-g++ reddit36.cpp -fPIC -shared -std=c++17 -o reddit36.o
-sudo mv reddit36.o "$(mysql_config --plugindir)/"
-CREATE FUNCTION reddit36encode RETURNS STRING SONAME 'reddit36.o';
-CREATE FUNCTION reddit36decode RETURNS INTEGER SONAME 'reddit36.o';
+g++ reddit36.cpp -fPIC -shared -std=c++17 -o /tmp/reddit36.so
+sudo mv /tmp/reddit36.so "$(mysql_config --plugindir)/"
+CREATE FUNCTION reddit36encode RETURNS STRING SONAME 'reddit36.so';
+CREATE FUNCTION reddit36decode RETURNS INTEGER SONAME 'reddit36.so';
 
 # Use:
 SELECT reddit36encode(INTEGER);
@@ -17,7 +17,7 @@ SELECT reddit36decode(STRING);
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <mariadb/mysql.h>
+#include <mysql/mysql.h>
 #include <inttypes.h>
 #include <string> // for std::char_traits
 #include <vector>
