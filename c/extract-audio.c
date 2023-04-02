@@ -40,6 +40,9 @@ void make_filename(char* const buf,  const char* const basename,  const int code
 		case AV_CODEC_ID_VP9:
 			file_ext = ".webm";
 			break;
+		case AV_CODEC_ID_MP3:
+			file_ext = ".mp3";
+			break;
 		default: {
 			static const char* map[] = {
 				MAP_ENUM(AV_CODEC_ID_NONE),
@@ -575,10 +578,15 @@ int extract_audio(const char* const output_filepath_basename,  const char* const
 }
 
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[]){
+	if (argc != 3){
+		write(2, "USAGE: [OUTPUT_BASENAME] [INPUT_FILEPATH]\n", 42);
+		return 1;
+	}
+	
 	const char* const output_basename = argv[1];
 	const char* const input_filepath = argv[2];
-	static char output_filepath[1024];
+	static char output_filepath[4096];
 	
 	return extract_audio(output_basename, input_filepath);
 }
