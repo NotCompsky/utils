@@ -1,3 +1,3 @@
-#include <dirent.h>
+#include <stdint.h> // for uint32_t
 
-size_t count_dir(const char* const path);
+uint32_t count_dir(const char* const path);
