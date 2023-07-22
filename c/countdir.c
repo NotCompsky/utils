@@ -1,9 +1,11 @@
 #include "countdir.h"
-#include <stdio.h>
+#include <unistd.h> // for write
+#include <stdint.h> // for uintptr_t
+#include <dirent.h> // for DIR
 
 
-size_t count_dir(const char* const path){
-	size_t n = 0;
+uint32_t count_dir(const char* const path){
+	uint32_t n = 0;
 	
 	DIR* dir;
 	struct dirent* ent;
@@ -35,9 +37,21 @@ size_t count_dir(const char* const path){
 }
 
 int main(const int argc,  const char** const argv){
-	size_t n = 0;
+	uint32_t n = 0;
 	for (auto i = 1;  i < argc;  ++i)
 		n += count_dir(argv[i]);
-	printf("%lu\n", n);
+	char buf[20];
+	uint32_t m = n;
+	uint32_t n_digits = 0;
+	do {
+		m /= 10;
+		++n_digits;
+	} while (m != 0);
+	char* itr = buf+n_digits;
+	do {
+		*(--itr) = '0'+(n%10);
+		n /= 10;
+	} while (n != 0);
+	write(1, buf, n_digits);
 	return 0;
 }
