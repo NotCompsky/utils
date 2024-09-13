@@ -1,0 +1,6 @@
+**/possibly-3rd-party/**
+**/bin/**
+**/boring/**
+**/misc/**
+**/*.kate-swp
+*.zstd
